@@ -1,0 +1,11 @@
+[plugin]
+id = "opencad.landarch"
+name = "Land Arch Tools"
+version = "0.1.0"
+description = "Landscape architecture design and construction-document tools for Open CAD Studio"
+
+[opencad]
+api_version = 3
+ribbon_order = 60
+command_prefixes = ["LA_"]
+xdata_apps = ["LANDARCH"]

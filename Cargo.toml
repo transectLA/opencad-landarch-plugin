@@ -1,0 +1,16 @@
+[package]
+name = "opencad-landarch-plugin"
+version = "0.1.0"
+edition = "2021"
+description = "Land Arch Tools - landscape architecture design and CD tools for Open CAD Studio"
+
+[lib]
+name = "landarch"
+crate-type = ["cdylib"]
+
+[dependencies]
+ocs_plugin_api = { git = "https://github.com/HakanSeven12/OpenCADStudio", features = ["host"] }
+
+# Match the host's acadrust build so the loaded library is binary-compatible.
+[patch.crates-io]
+acadrust = { git = "https://github.com/HakanSeven12/acadrust", branch = "main" }
