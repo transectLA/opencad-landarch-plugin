@@ -1,6 +1,6 @@
 [package]
 name = "opencad-landarch-plugin"
-version = "0.1.0"
+version = "0.0.0"
 edition = "2021"
 description = "Land Arch Tools - landscape architecture design and CD tools for Open CAD Studio"
 
