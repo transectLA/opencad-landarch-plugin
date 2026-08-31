@@ -1,0 +1,15 @@
+[plugin]
+id = "opencad.landarch"
+name = "Land Arch Tools"
+version = "0.0.2"
+description = "Landscape architecture planting design and construction documentation tools for Open CAD Studio"
+author = "Land Arch Tools contributors"
+license = "GPL-3.0-only"
+repository = "YOUR_ACCOUNT/opencad-landarch-plugin"
+
+[opencad]
+api_version = 5
+rustc_version = "__RUSTC_VERSION__"
+ribbon_order = 70
+command_prefixes = ["LA_"]
+xdata_apps = ["LANDARCH"]
