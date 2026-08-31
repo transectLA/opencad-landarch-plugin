@@ -1,26 +1,14 @@
-name: release
+name: Release
 
-# Build the plugin cdylib for each desktop platform and attach the binaries
-# (plus plugin.toml) to a GitHub Release. Open CAD Studio's Plugin Manager reads
-# the release assets, picks the one matching the user's OS/arch, and installs it.
-#
-# Two entry points:
-#
-#   push (v* tag)  — a human tagged by hand.
-#   workflow_call  — repin.yml cutting an automated release. This exists because
-#                    GitHub does not start workflows from events created with
-#                    the default GITHUB_TOKEN: a tag the bot pushes would never
-#                    fire the `push` trigger above, so the bot calls this
-#                    workflow directly instead of relying on the tag event.
 on:
   push:
-    tags: ["v*"]
+    tags:
+      - "v*"
   workflow_dispatch:
     inputs:
       tag:
-        description: "Tag to build and publish (e.g. v0.4.6). Must already exist."
+        description: "Tag to build and release (e.g. v0.1.0). Must already exist."
         required: true
-        type: string
 
 permissions:
   contents: write
@@ -32,70 +20,82 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            ext: so
-            asset: opencad.landsurvey-linux-x86_64.so
+            target: x86_64-unknown-linux-gnu
+            asset_name: opencad.landarch-linux-x86_64.so
+            lib_name: liblandarch.so
           - os: windows-latest
-            ext: dll
-            asset: opencad.landsurvey-windows-x86_64.dll
+            target: x86_64-pc-windows-msvc
+            asset_name: opencad.landarch-windows-x86_64.dll
+            lib_name: landarch.dll
           - os: macos-latest
-            ext: dylib
-            asset: opencad.landsurvey-macos-aarch64.dylib
+            target: aarch64-apple-darwin
+            asset_name: opencad.landarch-macos-aarch64.dylib
+            lib_name: liblandarch.dylib
+
     runs-on: ${{ matrix.os }}
-    env:
-      # `inputs` is unset on the push path, so this resolves to the pushed tag.
-      TAG: ${{ inputs.tag || github.ref_name }}
+
     steps:
-      - uses: actions/checkout@v5
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          # Build the tagged commit, not whatever the default branch points at
-          # by the time a called run starts.
-          ref: ${{ inputs.tag || github.ref_name }}
-      # Floating `stable` on purpose: ABI compatibility with the host wants the
-      # same toolchain, and OpenCADStudio's own release workflow builds on
-      # `stable` too. Pinning a fixed rustc here would drift away from the host
-      # over time rather than towards it. The version is echoed in the build
-      # step so a failed load can be traced back to the exact compiler.
-      - uses: dtolnay/rust-toolchain@stable
+          ref: ${{ github.event.inputs.tag || github.ref }}
 
-      # A release whose tag disagrees with the manifests ships a plugin that
-      # reports the wrong version to the Plugin Manager. Catch it before the
-      # assets are built.
-      - name: Check tag matches the declared plugin version
-        shell: bash
-        run: |
-          set -euo pipefail
-          tag="${TAG#v}"
-          cargo_ver=$(grep -m1 '^version = ' Cargo.toml | cut -d'"' -f2)
-          plugin_ver=$(grep -m1 '^version = ' plugin.toml | cut -d'"' -f2)
-          echo "tag=$tag  Cargo.toml=$cargo_ver  plugin.toml=$plugin_ver"
-          if [ "$tag" != "$cargo_ver" ] || [ "$tag" != "$plugin_ver" ]; then
-            echo "::error::tag v$tag disagrees with Cargo.toml ($cargo_ver) / plugin.toml ($plugin_ver)"
-            exit 1
-          fi
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
 
-      # `--locked` builds the release from the committed Cargo.lock. Without it
-      # each runner re-resolves the dependency graph, so the three platform
-      # binaries can be built against different transitive versions than each
-      # other and than whatever was tested — and this cdylib shares acadrust
-      # types with the host across the plugin boundary.
-      - name: Build
-        shell: bash
+      # Linux runners need the same native dev libraries the OCS host itself
+      # requires to build (graphics/windowing/font libs), since acadrust
+      # pulls in the same stack.
+      - name: Install Linux build dependencies
+        if: matrix.os == 'ubuntu-latest'
         run: |
-          rustc --version
-          cargo build --release --locked
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-dev libx11-dev libxcursor-dev \
+            libxi-dev libxrandr-dev libxkbcommon-dev libwayland-dev \
+            libfontconfig1-dev libfreetype6-dev
+
+      - name: Build release
+        run: cargo build --release --target ${{ matrix.target }}
 
       - name: Stage release asset
         shell: bash
         run: |
-          mkdir -p dist
-          # The cdylib name varies by platform (lib*.so / *.dll / lib*.dylib);
-          # the host loader accepts any name with the right extension.
-          cp target/release/*.${{ matrix.ext }} "dist/${{ matrix.asset }}"
-          cp plugin.toml dist/plugin.toml
-      - uses: softprops/action-gh-release@v3
+          mkdir -p staging
+          cp target/${{ matrix.target }}/release/${{ matrix.lib_name }} staging/${{ matrix.asset_name }}
+          cp plugin.toml staging/plugin.toml
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
         with:
-          # Explicit: on the workflow_call path there is no tag ref to infer.
-          tag_name: ${{ inputs.tag || github.ref_name }}
-          files: |
-            dist/${{ matrix.asset }}
-            dist/plugin.toml
+          name: ${{ matrix.asset_name }}
+          path: staging/${{ matrix.asset_name }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Flatten artifacts
+        run: |
+          mkdir -p release
+          find artifacts -type f -exec cp {} release/ \;
+          cp plugin.toml release/plugin.toml
+          ls -la release
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          files: release/*
+          generate_release_notes: true
