@@ -1,0 +1,6 @@
+code,name,manufacturer,model,layer,spec_section,detail,unit_cost
+BENCH-01,Backed site bench,Basis of design,6-ft bench,L-SITE-FURN,12 93 00,1/L5.02,2400
+TABLE-01,Picnic table,Basis of design,Accessible table,L-SITE-FURN,12 93 00,2/L5.02,3200
+BIKE-01,Bicycle rack,Basis of design,Inverted-U,L-SITE-FURN,12 93 00,3/L5.02,650
+TRASH-01,Waste / recycling receptacle,Basis of design,Dual stream,L-SITE-FURN,12 93 00,4/L5.02,1800
+BOLL-01,Site bollard,Basis of design,Fixed bollard,L-SITE-FURN,32 17 43,5/L5.02,950

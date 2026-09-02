@@ -1,0 +1,7 @@
+code,name,manufacturer,model,layer,spec_section,detail,unit_cost
+DRINK-01,Drinking fountain / bottle filler,Basis of design,Outdoor accessible,L-SITE-AMEN,22 47 13,1/L5.03,6200
+GRILL-01,Park grill,Basis of design,Fixed charcoal grill,L-SITE-AMEN,11 68 00,2/L5.03,1700
+FIRE-01,Site fire feature,Basis of design,Outdoor fire feature,L-SITE-AMEN,11 68 00,3/L5.03,8500
+DOG-01,Dog waste station,Basis of design,Bag dispenser + bin,L-SITE-AMEN,12 93 00,4/L5.03,900
+PLAY-01,Play equipment zone,Basis of design,Play element,L-SITE-AMEN,11 68 13,5/L5.03,25000
+SHADE-01,Prefabricated shade structure,Basis of design,Shade canopy,L-SITE-AMEN,13 34 23,6/L5.03,18000

@@ -1,9 +1,8 @@
-code,botanical,common,category,default_radius,default_spacing,palette
-QAGR,Quercus agrifolia,Coast Live Oak,Tree,4.0,25.0,NATIVE
-ARUB,Arbutus unedo,Strawberry Tree,Tree,3.0,18.0,NATIVE
-ACER,Acer rubrum,Red Maple,Tree,3.0,20.0,STREET
-PMON,Pittosporum moniliferum,Cape Pittosporum,Tree,2.5,16.0,STREET
-RHIN,Rhaphiolepis indica,Indian Hawthorn,Shrub,1.5,4.0,STREET
-MUCA,Muhlenbergia capillaris,Pink Muhly Grass,Grass,1.5,3.0,NATURALISTIC
-LOMI,Lomandra longifolia,Longleaf Lomandra,Grass,1.5,3.0,NATIVE
-HEAR,Heteromeles arbutifolia,Toyon,Shrub,2.0,7.0,NATIVE
+code,botanical,common,category,default_spacing,symbol_radius,layer,palette
+QAGR,Quercus agrifolia,Coast Live Oak,Tree,25,4,L-PLNT-TREE,NATIVE
+ARUB,Arbutus unedo,Strawberry Tree,Tree,18,3,L-PLNT-TREE,NATIVE
+ACER,Acer rubrum,Red Maple,Tree,20,3,L-PLNT-TREE,STREET
+RHIN,Rhaphiolepis indica,Indian Hawthorn,Shrub,4,1.5,L-PLNT-SHRB,STREET
+MUCA,Muhlenbergia capillaris,Pink Muhly Grass,Grass,3,1.5,L-PLNT-GRAS,NATURALISTIC
+LOMI,Lomandra longifolia,Longleaf Lomandra,Grass,3,1.5,L-PLNT-GRAS,NATIVE
+HEAR,Heteromeles arbutifolia,Toyon,Shrub,7,2,L-PLNT-SHRB,NATIVE
