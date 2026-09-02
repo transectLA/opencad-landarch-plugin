@@ -1,101 +1,45 @@
-name: Release
-
+name: release
 on:
   push:
-    tags:
-      - "v*"
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: "Tag to build and release (e.g. v0.1.0). Must already exist."
-        required: true
-
+    tags: ['v*']
 permissions:
   contents: write
-
 jobs:
   build:
     strategy:
-      fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-            asset_name: opencad.landarch-linux-x86_64.so
-            lib_name: liblandarch.so
+            asset: opencad.landarch-linux-x86_64.so
+            source: target/release/liblandarch.so
           - os: windows-latest
-            target: x86_64-pc-windows-msvc
-            asset_name: opencad.landarch-windows-x86_64.dll
-            lib_name: landarch.dll
+            asset: opencad.landarch-windows-x86_64.dll
+            source: target/release/landarch.dll
           - os: macos-latest
-            target: aarch64-apple-darwin
-            asset_name: opencad.landarch-macos-aarch64.dylib
-            lib_name: liblandarch.dylib
-
+            asset: opencad.landarch-macos-aarch64.dylib
+            source: target/release/liblandarch.dylib
     runs-on: ${{ matrix.os }}
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --release
+      - shell: bash
+        run: cp "${{ matrix.source }}" "${{ matrix.asset }}"
+      - uses: actions/upload-artifact@v4
         with:
-          ref: ${{ github.event.inputs.tag || github.ref }}
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.target }}
-
-      # Linux runners need the same native dev libraries the OCS host itself
-      # requires to build (graphics/windowing/font libs), since acadrust
-      # pulls in the same stack.
-      - name: Install Linux build dependencies
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgl1-mesa-dev libx11-dev libxcursor-dev \
-            libxi-dev libxrandr-dev libxkbcommon-dev libwayland-dev \
-            libfontconfig1-dev libfreetype6-dev
-
-      - name: Build release
-        run: cargo build --release --target ${{ matrix.target }}
-
-      - name: Stage release asset
-        shell: bash
-        run: |
-          mkdir -p staging
-          cp target/${{ matrix.target }}/release/${{ matrix.lib_name }} staging/${{ matrix.asset_name }}
-          cp plugin.toml staging/plugin.toml
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.asset_name }}
-          path: staging/${{ matrix.asset_name }}
-
-  release:
+          name: ${{ matrix.asset }}
+          path: ${{ matrix.asset }}
+  publish:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
         with:
-          ref: ${{ github.event.inputs.tag || github.ref }}
-
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
+          path: dist
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
         with:
-          path: artifacts
-
-      - name: Flatten artifacts
-        run: |
-          mkdir -p release
-          find artifacts -type f -exec cp {} release/ \;
-          cp plugin.toml release/plugin.toml
-          ls -la release
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
-          files: release/*
-          generate_release_notes: true
+          files: |
+            dist/*
+            plugin.toml
