@@ -1,16 +1,27 @@
 [package]
 name = "opencad-landarch-plugin"
-version = "0.0.0"
+version = "0.0.2"
 edition = "2021"
-description = "Land Arch Tools - landscape architecture design and CD tools for Open CAD Studio"
+description = "Land Arch Tools — landscape architecture planting, materials, furnishings, amenities, and construction-documentation tools for Open CAD Studio."
+license = "GPL-3.0-only"
+repository = "https://github.com/YOUR_ACCOUNT/opencad-landarch-plugin"
 
 [lib]
 name = "landarch"
 crate-type = ["cdylib"]
 
 [dependencies]
-ocs_plugin_api = { git = "https://github.com/HakanSeven12/OpenCADStudio", features = ["host"] }
+# Match the working Land Survey plugin's known-good OpenCADStudio v0.9.8 pin.
+ocs_plugin_api = { git = "https://github.com/HakanSeven12/OpenCADStudio", rev = "1516694c72ae94ef7cf03750d4fbb070a8c81ab3", features = ["host"] }
+# The plugin constructs CAD entities and XDATA directly, so use the exact same
+# acadrust/cadcodec source spelling + revision pattern as the working survey plugin.
+acadrust = { git = "https://github.com/HakanSeven12/cadcodec.git", rev = "5b2ae66", features = ["serde"] }
+landarch-core = { path = "crates/landarch-core" }
 
-# Match the host's acadrust build so the loaded library is binary-compatible.
-[patch.crates-io]
-acadrust = { git = "https://github.com/HakanSeven12/acadrust", branch = "main" }
+[workspace]
+resolver = "2"
+members = ["crates/landarch-core", "crates/landarch-cli"]
+
+# Mirrored host patch used by the working Land Survey plugin for OCS v0.9.8.
+[patch."https://github.com/HakanSeven12/cadcodec.git"]
+acadrust = { git = "https://git@github.com/HakanSeven12/cadcodec.git", rev = "788eea0161ba9f3eb7ee6569fd8bb52a8207a2ed" }

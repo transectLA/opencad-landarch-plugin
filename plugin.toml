@@ -1,11 +1,21 @@
 [plugin]
 id = "opencad.landarch"
 name = "Land Arch Tools"
-version = "0.1.0"
-description = "Landscape architecture design and construction-document tools for Open CAD Studio"
+version = "0.0.2"
+description = "Landscape architecture planting, materials, furnishings, amenities, schedules, and QA/QC tools"
+author = "Land Arch Tools contributors"
+license = "GPL-3.0-only"
 
 [opencad]
-api_version = 3
+# Pinned to the same known-good OCS v0.9.8 contract used by the working
+# opencad-landsurvey-plugin reference implementation.
+api_version = 4
 ribbon_order = 60
 command_prefixes = ["LA_"]
-xdata_apps = ["LANDARCH"]
+xdata_apps = [
+  "LANDARCH_PLANT",
+  "LANDARCH_PLANTING_AREA",
+  "LANDARCH_MATERIAL",
+  "LANDARCH_FURNISHING",
+  "LANDARCH_AMENITY"
+]
