@@ -1,1 +1,7 @@
-
+[package]
+name = "landarch-cli"
+version = "0.0.2"
+edition = "2021"
+license = "GPL-3.0-only"
+[dependencies]
+landarch-core = { path = "../landarch-core" }
