@@ -1,1 +1,10 @@
+[package]
+name = "landarch-core"
+version = "0.0.2"
+edition = "2021"
+description = "Host-free landscape architecture domain engine for Land Arch Tools"
+license = "GPL-3.0-only"
 
+[lib]
+name = "landarch_core"
+path = "src/lib.rs"
