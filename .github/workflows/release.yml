@@ -1,7 +1,7 @@
 name: release
 on:
   workflow_dispatch:
-  push:
+  #push:
     tags: ['v*']
 permissions:
   contents: write
