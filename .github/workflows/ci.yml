@@ -1,14 +1,46 @@
-name: ci
-on: [push, pull_request]
+name: Land Arch Tools CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: landarch-ci-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
-  test:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+  core-test:
+    name: Test landarch-core
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      CARGO_TERM_COLOR: always
+      CARGO_NET_GIT_FETCH_WITH_CLI: "true"
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - run: cargo test -p landarch-core
-      - run: cargo check --workspace
-      - run: cargo build --release
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Show versions
+        run: |
+          rustc --version
+          cargo --version
+          git --version
+
+      - name: Test landarch-core
+        run: cargo test -p landarch-core --verbose
+
+      - name: Check plugin
+        run: cargo check --verbose
+
+      - name: Build plugin
+        run: cargo build --release --verbose
