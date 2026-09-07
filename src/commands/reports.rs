@@ -1,13 +1,21 @@
 use std::collections::BTreeMap;
-use acadrust::xdata::{ExtendedDataRecord, XDataValue};
+use acadrust::xdata::ExtendedDataRecord;
 use ocs_plugin_api::host::HostApi;
 use crate::xdata;
 
 #[derive(Default)]
 struct Qty { qty:f64, unit:String, name:String, unit_cost:f64 }
 
-fn record_from_entity<'a>(entity:&'a acadrust::EntityType,app:&str)->Option<&'a ExtendedDataRecord>{
-    entity.common().extended_data.records.iter().find(|r|r.application_name==app)
+fn record_from_entity<'a>(
+    entity: &'a acadrust::EntityType,
+    app: &str,
+) -> Option<&'a ExtendedDataRecord> {
+    entity
+        .common()
+        .extended_data
+        .records()
+        .iter()
+        .find(|r| r.application_name == app)
 }
 
 pub fn plant_schedule(host:&mut dyn HostApi){
